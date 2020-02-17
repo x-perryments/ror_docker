@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  web:
+    build: 
+      context: .
+      dockerfile: /var/www/html/rails_docker/Dockerfile
+    command: /bin/sh -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/var/www/html/dockerize
+    ports:
+      - "3001:3000"
+    environment:
+      PORT: "5431"
+      PGHOST: "0.0.0.0"
+      PGUSER: "postgres"
+      PGDBNAME: "docker_db"
+    depends_on: 
+      - db
+
+  db:
+    image: postgres
+    network_mode: bridge
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/10/main
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+
+  net:    
+    build:      
+      context: .      
+      dockerfile: /var/www/html/rails_docker/net/Dockerfile    
+    depends_on:      
+      - web    
+    ports:      
+      - 81:80
+#networks:
+#  default:
+#    external:
+#     name: railsdocker_default
